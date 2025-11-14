@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UK VAT Rate Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .form-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #4299e1;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .result-box {
+            display: none;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border: 2px solid #4299e1;
+        }
+        
+        .result-box.show {
+            display: block;
+            animation: slideIn 0.4s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-box h3 {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .result-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .result-value {
+            font-weight: 700;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .vat-rate-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.2em;
+        }
+        
+        .rate-standard {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .rate-reduced {
+            background: #ffa500;
+            color: white;
+        }
+        
+        .rate-zero {
+            background: #4ecdc4;
+            color: white;
+        }
+        
+        .rate-exempt {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .rate-outside {
+            background: #9b59b6;
+            color: white;
+        }
+        
+        .notice-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .notice-box strong {
+            color: #856404;
+        }
+        
+        .amount-calculation {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .amount-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .amount-row:last-child {
+            border-bottom: 2px solid #4299e1;
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #333;
+            margin-top: 5px;
+            padding-top: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-section">
+            <h2>1. Product or Service Details</h2>
+            
+            <div class="form-group">
+                <label for="category">Select Category:</label>
+                <select id="category" onchange="updateSubcategories()">
+                    <option value="">-- Select Category --</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="subcategory">Select Specific Product/Service:</label>
+                <select id="subcategory">
+                    <option value="">-- First select a category --</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h2>2. Place of Supply & Customer Details</h2>
+            
+            <div class="form-group">
+                <label for="supplierLocation">Supplier Location:</label>
+                <select id="supplierLocation">
+                    <option value="UK">United Kingdom</option>
+                    <option value="EU">European Union</option>
+                    <option value="Other">Rest of World</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerLocation">Customer Location:</label>
+                <select id="customerLocation">
+                    <option value="UK">United Kingdom</option>
+                    <option value="EU">European Union</option>
+                    <option value="Other">Rest of World</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerType">Customer Type:</label>
+                <select id="customerType">
+                    <option value="B2C">B2C (Consumer / End User)</option>
+                    <option value="B2B">B2B (Business / VAT Registered)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h2>3. Transaction Amount (Optional)</h2>
+            
+            <div class="form-group">
+                <label for="amount">Net Amount (£):</label>
+                <input type="number" id="amount" step="0.01" placeholder="Enter amount excluding VAT">
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" onclick="calculateVAT()">Calculate VAT Rate</button>
+            <button class="btn-secondary" onclick="resetForm()">Reset Form</button>
+        </div>
+        
+        <div id="resultBox" class="result-box">
+            <h3>📊 VAT Calculation Result</h3>
+            <div id="resultContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // VAT Rules Database
+        const vatRules = {
+            'Food & Drink': {
+                'Basic Food (Zero-rated)': { rate: 'ZERO', notice: 'VAT Notice 701/14', conditions: 'Most food for human consumption' },
+                'Restaurant/Catering': { rate: 'STANDARD', notice: 'VAT Notice 709/1', conditions: 'Food consumed on premises' },
+                'Hot Takeaway': { rate: 'STANDARD', notice: 'VAT Notice 709/1', conditions: 'Hot takeaway food' },
+                'Cold Takeaway': { rate: 'ZERO', notice: 'VAT Notice 709/1', conditions: 'Cold takeaway (not in designated area)' },
+                'Alcoholic Drinks': { rate: 'STANDARD', notice: 'VAT Notice 701/14', conditions: 'All alcohol' },
+                'Soft Drinks/Bottled Water': { rate: 'STANDARD', notice: 'VAT Notice 701/14', conditions: 'Non-alcoholic beverages' },
+                'Confectionery': { rate: 'STANDARD', notice: 'VAT Notice 701/14', conditions: 'Sweets and chocolate' }
+            },
+            'Clothing & Footwear': {
+                'Children\'s Clothing (Under 14)': { rate: 'ZERO', notice: 'VAT Notice 714', conditions: 'Young children\'s clothing' },
+                'Adult Clothing': { rate: 'STANDARD', notice: 'General', conditions: 'Adult clothing and footwear' },
+                'Motorcycle/Cycle Helmets': { rate: 'ZERO', notice: 'VAT Notice 701/23', conditions: 'Protective helmets' },
+                'Children\'s Car Seats': { rate: 'REDUCED', notice: 'VAT Notice 701/23', conditions: 'Car seats with restraints' }
+            },
+            'Books & Publications': {
+                'Books (Print & E-books)': { rate: 'ZERO', notice: 'VAT Notice 701/10', conditions: 'Books and publications' },
+                'Newspapers & Magazines': { rate: 'ZERO', notice: 'VAT Notice 701/10', conditions: 'Periodicals' },
+                'Brochures': { rate: 'ZERO', notice: 'VAT Notice 701/10', conditions: 'Printed brochures' }
+            },
+            'Energy & Utilities': {
+                'Domestic Electricity/Gas': { rate: 'REDUCED', notice: 'VAT Notice 701/19', conditions: 'Domestic use only' },
+                'Commercial Fuel': { rate: 'STANDARD', notice: 'VAT Notice 701/19', conditions: 'Business use' },
+                'Energy-Saving Materials (GB)': { rate: 'ZERO', notice: 'VAT Notice 708/6', conditions: 'Heat pumps, solar panels (Great Britain)' },
+                'Energy-Saving Materials (NI)': { rate: 'REDUCED', notice: 'VAT Notice 708/6', conditions: 'Northern Ireland installations' },
+                'Water & Sewerage (Domestic)': { rate: 'ZERO', notice: 'VAT Notice 701/16', conditions: 'Domestic water services' }
+            },
+            'Construction & Property': {
+                'New Residential Build': { rate: 'ZERO', notice: 'VAT Notice 708', conditions: 'New dwelling construction' },
+                'Residential Conversion': { rate: 'REDUCED', notice: 'VAT Notice 708', conditions: 'Non-residential to residential' },
+                'Renovation (Empty 2+ Years)': { rate: 'REDUCED', notice: 'VAT Notice 708', conditions: 'Residential renovation' },
+                'Disabled Adaptations': { rate: 'ZERO', notice: 'VAT Notice 708', conditions: 'Building services for disabled' },
+                'Standard Building Work': { rate: 'STANDARD', notice: 'VAT Notice 708', conditions: 'General construction' },
+                'Residential Property Rental': { rate: 'EXEMPT', notice: 'VAT Notice 742', conditions: 'Residential letting' },
+                'Commercial Property Rental': { rate: 'STANDARD', notice: 'VAT Notice 742', conditions: 'If opted to tax' }
+            },
+            'Transport': {
+                'Passenger Transport (UK)': { rate: 'ZERO', notice: 'VAT Notice 744A', conditions: 'UK passenger transport' },
+                'Freight (International)': { rate: 'ZERO', notice: 'VAT Notice 744B', conditions: 'To/from outside UK' },
+                'Freight (Domestic)': { rate: 'STANDARD', notice: 'VAT Notice 744B', conditions: 'Domestic freight' },
+                'Aircraft Maintenance': { rate: 'ZERO', notice: 'VAT Notice 744C', conditions: 'Aircraft repair' }
+            },
+            'Health & Medical': {
+                'Medical Services': { rate: 'EXEMPT', notice: 'VAT Notice 701/57', conditions: 'By registered professionals' },
+                'Prescription Medicines': { rate: 'ZERO', notice: 'VAT Notice 701/57', conditions: 'Prescription drugs' },
+                'Disability Aids': { rate: 'ZERO', notice: 'VAT Notice 701/7', conditions: 'Equipment for disabled' },
+                'Mobility Aids (Over 60)': { rate: 'REDUCED', notice: 'VAT Notice 701/7', conditions: 'For people over 60' },
+                'Sanitary Products': { rate: 'ZERO', notice: 'VAT Notice 701/18', conditions: 'Women\'s sanitary products' },
+                'Smoking Cessation Products': { rate: 'REDUCED', notice: 'General', conditions: 'Nicotine patches/gum' }
+            },
+            'Education & Training': {
+                'Education (Eligible Bodies)': { rate: 'EXEMPT', notice: 'General', conditions: 'Not private schools' },
+                'Private School Fees': { rate: 'STANDARD', notice: 'General', conditions: 'From 1 Jan 2025' },
+                'Vocational Training': { rate: 'EXEMPT', notice: 'General', conditions: 'By eligible bodies' }
+            },
+            'Financial Services': {
+                'Banking Services': { rate: 'EXEMPT', notice: 'VAT Notice 701/49', conditions: 'Financial services' },
+                'Insurance': { rate: 'EXEMPT', notice: 'VAT Notice 701/36', conditions: 'Insurance services' },
+                'Investment Gold': { rate: 'EXEMPT', notice: 'VAT Notice 701/21', conditions: 'Investment gold' }
+            },
+            'Digital Services': {
+                'Digital Services (UK B2C)': { rate: 'STANDARD', notice: 'VAT Notice 741A', conditions: 'To UK consumers' },
+                'Digital Services (EU B2C)': { rate: 'OUTSIDE_SCOPE', notice: 'VAT Notice 741A', conditions: 'EU VAT via OSS' },
+                'Software/SaaS (B2B Non-UK)': { rate: 'OUTSIDE_SCOPE', notice: 'VAT Notice 741A', conditions: 'Outside UK VAT' }
+            },
+            'Charity & Sport': {
+                'Charity Fundraising': { rate: 'EXEMPT', notice: 'VAT Notice 701/1', conditions: 'Charity events' },
+                'Sports Facilities': { rate: 'EXEMPT', notice: 'General', conditions: 'Sports activities' },
+                'Betting & Gaming': { rate: 'EXEMPT', notice: 'VAT Notice 701/29', conditions: 'Gambling services' }
+            },
+            'Exports': {
+                'Goods Export': { rate: 'ZERO', notice: 'VAT Notice 703', conditions: 'With export evidence' },
+                'Services to Overseas B2B': { rate: 'OUTSIDE_SCOPE', notice: 'VAT Notice 741A', conditions: 'Reverse charge applies' }
+            },
+            'General Goods & Services': {
+                'Electronics': { rate: 'STANDARD', notice: 'General', conditions: 'Consumer electronics' },
+                'Professional Services': { rate: 'STANDARD', notice: 'General', conditions: 'Legal, accounting, consulting' },
+                'General Goods': { rate: 'STANDARD', notice: 'General', conditions: 'Most goods and services' }
+            }
+        };
+
+        const ratePercentages = {
+            'STANDARD': 20,
+            'REDUCED': 5,
+            'ZERO': 0,
+            'EXEMPT': null,
+            'OUTSIDE_SCOPE': null
+        };
+
+        // Initialize categories
+        function initCategories() {
+            const categorySelect = document.getElementById('category');
+            Object.keys(vatRules).forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        // Update subcategories
+        function updateSubcategories() {
+            const category = document.getElementById('category').value;
+            const subcategorySelect = document.getElementById('subcategory');
+            
+            subcategorySelect.innerHTML = '<option value="">-- Select Product/Service --</option>';
+            
+            if (category && vatRules[category]) {
+                Object.keys(vatRules[category]).forEach(subcategory => {
+                    const option = document.createElement('option');
+                    option.value = subcategory;
+                    option.textContent = subcategory;
+                    subcategorySelect.appendChild(option);
+                });
+            }
+        }
+
+        // Calculate VAT
+        function calculateVAT() {
+            const category = document.getElementById('category').value;
+            const subcategory = document.getElementById('subcategory').value;
+            const supplierLocation = document.getElementById('supplierLocation').value;
+            const customerLocation = document.getElementById('customerLocation').value;
+            const customerType = document.getElementById('customerType').value;
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+
+            if (!category || !subcategory) {
+                alert('Please select both category and specific product/service');
+                return;
+            }
+
+            const rule = vatRules[category][subcategory];
+            let rateType = rule.rate;
+            let ratePercentage = ratePercentages[rateType];
+            let notes = [];
+
+            // Place of supply logic
+            let placeOfSupply = supplierLocation;
+            let placeExplanation = '';
+
+            if (customerType === 'B2B') {
+                placeOfSupply = customerLocation;
+                placeExplanation = 'B2B supply - taxable where customer belongs (VAT Notice 741A Section 6.3)';
+                
+                if (supplierLocation === 'UK' && customerLocation !== 'UK') {
+                    rateType = 'OUTSIDE_SCOPE';
+                    ratePercentage = null;
+                    notes.push('UK VAT not charged - reverse charge applies in customer\'s country');
+                }
+            } else {
+                placeExplanation = 'B2C supply - taxable where supplier belongs (VAT Notice 741A Section 6.2)';
+                
+                if (category === 'Digital Services' && customerLocation !== 'UK') {
+                    placeOfSupply = customerLocation;
+                    placeExplanation = 'Digital service to consumer - taxable where customer is located';
+                    rateType = 'OUTSIDE_SCOPE';
+                    ratePercentage = null;
+                    if (customerLocation === 'EU') {
+                        notes.push('Consider OSS registration for EU customers');
+                    }
+                }
+            }
+
+            // Calculate amounts
+            let netAmount = amount;
+            let vatAmount = 0;
+            let grossAmount = amount;
+
+            if (amount > 0 && ratePercentage !== null) {
+                vatAmount = amount * (ratePercentage / 100);
+                grossAmount = amount + vatAmount;
+            }
+
+            // Display results
+            displayResults({
+                category,
+                subcategory,
+                rateType,
+                ratePercentage,
+                notice: rule.notice,
+                conditions: rule.conditions,
+                placeOfSupply,
+                placeExplanation,
+                supplierLocation,
+                customerLocation,
+                customerType,
+                netAmount,
+                vatAmount,
+                grossAmount,
+                notes
+            });
+        }
+
+        function displayResults(result) {
+            const resultBox = document.getElementById('resultBox');
+            const resultContent = document.getElementById('resultContent');
+
+            let rateClass = 'rate-standard';
+            if (result.rateType === 'REDUCED') rateClass = 'rate-reduced';
+            else if (result.rateType === 'ZERO') rateClass = 'rate-zero';
+            else if (result.rateType === 'EXEMPT') rateClass = 'rate-exempt';
+            else if (result.rateType === 'OUTSIDE_SCOPE') rateClass = 'rate-outside';
+
+            let rateDisplay = result.rateType;
+            if (result.ratePercentage !== null) {
+                rateDisplay = `${result.rateType} (${result.ratePercentage}%)`;
+            }
+
+            let html = `
+                <div class="result-item">
+                    <span class="result-label">VAT Rate:</span>
+                    <span class="vat-rate-badge ${rateClass}">${rateDisplay}</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Category:</span>
+                    <span class="result-value">${result.category} → ${result.subcategory}</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Place of Supply:</span>
+                    <span class="result-value">${result.placeOfSupply}</span>
+                </div>
+                
+                <div class="notice-box">
+                    <strong>📋 HMRC Reference:</strong> ${result.notice}<br>
+                    <strong>Conditions:</strong> ${result.conditions}<br>
+                    <strong>Explanation:</strong> ${result.placeExplanation}
+                </div>
+            `;
+
+            if (result.netAmount > 0) {
+                html += `
+                    <div class="amount-calculation">
+                        <h4 style="margin-bottom: 15px; color: #333;">💷 Amount Calculation</h4>
+                        <div class="amount-row">
+                            <span>Net Amount:</span>
+                            <span>£${result.netAmount.toFixed(2)}</span>
+                        </div>
+                        <div class="amount-row">
+                            <span>VAT Amount (${result.ratePercentage || 0}%):</span>
+                            <span>£${result.vatAmount.toFixed(2)}</span>
+                        </div>
+                        <div class="amount-row">
+                            <span>Gross Amount:</span>
+                            <span>£${result.grossAmount.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (result.notes.length > 0) {
+                html += '<div class="notice-box" style="background: #d4edda; border-left-color: #28a745;">';
+                html += '<strong>ℹ️ Important Notes:</strong><ul style="margin-left: 20px; margin-top: 10px;">';
+                result.notes.forEach(note => {
+                    html += `<li>${note}</li>`;
+                });
+                html += '</ul></div>';
+            }
+
+            resultContent.innerHTML = html;
+            resultBox.classList.add('show');
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function resetForm() {
+            document.getElementById('category').value = '';
+            document.getElementById('subcategory').innerHTML = '<option value="">-- First select a category --</option>';
+            document.getElementById('supplierLocation').value = 'UK';
+            document.getElementById('customerLocation').value = 'UK';
+            document.getElementById('customerType').value = 'B2C';
+            document.getElementById('amount').value = '';
+            document.getElementById('resultBox').classList.remove('show');
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            initCategories();
+        };
+    </script>
+</body>
+</html>
