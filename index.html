@@ -3,592 +3,700 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UK VAT Rate Calculator</title>
+    <title>UK Statutory Residence Test Calculator</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
+        .srt-calc-wrapper {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            font-family: Georgia, serif;
+        }
+
+        .srt-calc-header {
+            background: linear-gradient(135deg, #2d5016 0%, #3d6b1f 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .srt-calc-header h1 {
+            font-size: 2em;
+            margin: 0 0 10px 0;
+        }
+
+        .srt-info-box {
+            background: #f0f9ff;
             padding: 20px;
-        }
-        
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: white;
+            margin: 20px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 30px;
+            border-left: 4px solid #3d6b1f;
         }
-        
-        .form-section {
-            margin-bottom: 30px;
+
+        .srt-content {
+            padding: 40px;
         }
-        
-        .form-section h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.3em;
-            border-bottom: 2px solid #4299e1;
-            padding-bottom: 10px;
+
+        .srt-progress {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 20px 0;
         }
-        
-        .form-group {
-            margin-bottom: 20px;
+
+        .srt-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3d6b1f 0%, #4caf50 100%);
+            transition: width 0.5s ease;
+            width: 16.67%;
         }
-        
-        label {
+
+        .srt-step {
+            display: none;
+        }
+
+        .srt-step.active {
             display: block;
-            font-weight: 600;
-            color: #333;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .srt-question {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 5px solid #3d6b1f;
+        }
+
+        .srt-question h3 {
+            color: #2d5016;
+            margin: 0 0 15px 0;
+            font-size: 1.3em;
+        }
+
+        .srt-help {
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #1b5e20;
+        }
+
+        .srt-input {
+            margin: 20px 0;
+        }
+
+        .srt-input label {
+            display: block;
             margin-bottom: 8px;
-            font-size: 1em;
+            font-weight: bold;
+            color: #333;
         }
-        
-        select, input {
+
+        .srt-input input,
+        .srt-input select {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
             font-size: 1em;
-            transition: all 0.3s;
-            background: white;
+            font-family: Georgia, serif;
         }
-        
-        select:focus, input:focus {
+
+        .srt-input input:focus,
+        .srt-input select:focus {
             outline: none;
-            border-color: #4299e1;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            border-color: #3d6b1f;
         }
-        
-        .button-group {
+
+        .srt-option {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .srt-option:hover {
+            border-color: #3d6b1f;
+            background: #f0f9ff;
+        }
+
+        .srt-option.selected {
+            border-color: #3d6b1f;
+            background: #e8f5e9;
+        }
+
+        .srt-option input {
+            margin-right: 10px;
+        }
+
+        .srt-buttons {
             display: flex;
             gap: 15px;
             margin-top: 30px;
         }
-        
-        button {
+
+        .srt-btn {
             flex: 1;
             padding: 15px 30px;
-            font-size: 1em;
-            font-weight: 600;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-family: Georgia, serif;
             cursor: pointer;
             transition: all 0.3s;
         }
-        
-        .btn-primary {
-            background: #4299e1;
+
+        .srt-btn-primary {
+            background: #3d6b1f;
             color: white;
         }
-        
-        .btn-primary:hover {
-            background: #3182ce;
+
+        .srt-btn-primary:hover {
+            background: #2d5016;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+            box-shadow: 0 5px 15px rgba(61, 107, 31, 0.3);
         }
-        
-        .btn-secondary {
-            background: #e0e0e0;
-            color: #333;
+
+        .srt-btn-secondary {
+            background: #6c757d;
+            color: white;
         }
-        
-        .btn-secondary:hover {
-            background: #d0d0d0;
+
+        .srt-btn-secondary:hover {
+            background: #5a6268;
         }
-        
-        .result-box {
+
+        .srt-results {
             display: none;
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 8px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e8f5e9 100%);
+            border-radius: 12px;
             margin-top: 30px;
-            border: 2px solid #4299e1;
         }
-        
-        .result-box.show {
+
+        .srt-results.show {
             display: block;
-            animation: slideIn 0.4s ease;
         }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .result-box h3 {
-            color: #333;
-            font-size: 1.5em;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .result-item {
+
+        .srt-result-box {
             background: white;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #e0e0e0;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin: 20px 0;
         }
-        
-        .result-label {
-            font-weight: 600;
-            color: #555;
+
+        .srt-result-box h2 {
+            color: #2d5016;
+            margin: 0 0 20px 0;
         }
-        
-        .result-value {
-            font-weight: 700;
-            color: #333;
-            font-size: 1.1em;
-        }
-        
-        .vat-rate-badge {
+
+        .srt-badge {
             display: inline-block;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 1.2em;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin: 10px 0;
         }
-        
-        .rate-standard {
-            background: #ff6b6b;
-            color: white;
-        }
-        
-        .rate-reduced {
-            background: #ffa500;
-            color: white;
-        }
-        
-        .rate-zero {
-            background: #4ecdc4;
-            color: white;
-        }
-        
-        .rate-exempt {
-            background: #95a5a6;
-            color: white;
-        }
-        
-        .rate-outside {
-            background: #9b59b6;
-            color: white;
-        }
-        
-        .notice-box {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 4px;
-        }
-        
-        .notice-box strong {
-            color: #856404;
-        }
-        
-        .amount-calculation {
-            background: white;
+
+        .srt-badge-resident { background: #4caf50; color: white; }
+        .srt-badge-nonresident { background: #ff9800; color: white; }
+        .srt-badge-split { background: #2196f3; color: white; }
+
+        .srt-explanation {
+            background: #f8f9fa;
             padding: 20px;
-            border-radius: 6px;
-            margin-top: 15px;
-            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3d6b1f;
         }
-        
-        .amount-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #e0e0e0;
+
+        .srt-warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
         }
-        
-        .amount-row:last-child {
-            border-bottom: 2px solid #4299e1;
-            font-size: 1.2em;
-            font-weight: 700;
-            color: #333;
-            margin-top: 5px;
-            padding-top: 15px;
+
+        .srt-warning h4 { color: #856404; margin: 0 0 10px 0; }
+
+        .srt-tips {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
         }
-        
+
+        .srt-tips h4 { color: #0c5460; margin: 0 0 10px 0; }
+
         @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-            
-            .button-group {
-                flex-direction: column;
-            }
+            .srt-calc-header h1 { font-size: 1.5em; }
+            .srt-content { padding: 20px; }
+            .srt-buttons { flex-direction: column; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="form-section">
-            <h2>1. Product or Service Details</h2>
-            
-            <div class="form-group">
-                <label for="category">Select Category:</label>
-                <select id="category" onchange="updateSubcategories()">
-                    <option value="">-- Select Category --</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="subcategory">Select Specific Product/Service:</label>
-                <select id="subcategory">
-                    <option value="">-- First select a category --</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="form-section">
-            <h2>2. Place of Supply & Customer Details</h2>
-            
-            <div class="form-group">
-                <label for="supplierLocation">Supplier Location:</label>
-                <select id="supplierLocation">
-                    <option value="UK">United Kingdom</option>
-                    <option value="EU">European Union</option>
-                    <option value="Other">Rest of World</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="customerLocation">Customer Location:</label>
-                <select id="customerLocation">
-                    <option value="UK">United Kingdom</option>
-                    <option value="EU">European Union</option>
-                    <option value="Other">Rest of World</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="customerType">Customer Type:</label>
-                <select id="customerType">
-                    <option value="B2C">B2C (Consumer / End User)</option>
-                    <option value="B2B">B2B (Business / VAT Registered)</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="form-section">
-            <h2>3. Transaction Amount (Optional)</h2>
-            
-            <div class="form-group">
-                <label for="amount">Net Amount (£):</label>
-                <input type="number" id="amount" step="0.01" placeholder="Enter amount excluding VAT">
-            </div>
-        </div>
-        
-        <div class="button-group">
-            <button class="btn-primary" onclick="calculateVAT()">Calculate VAT Rate</button>
-            <button class="btn-secondary" onclick="resetForm()">Reset Form</button>
-        </div>
-        
-        <div id="resultBox" class="result-box">
-            <h3>📊 VAT Calculation Result</h3>
-            <div id="resultContent"></div>
-        </div>
+
+<div class="srt-calc-wrapper">
+    <div class="srt-calc-header">
+        <h1>🏠 UK Statutory Residence Test Calculator</h1>
+        <p>Determine your UK tax residence status for 2025/26</p>
     </div>
 
-    <script>
-        // VAT Rules Database
-        const vatRules = {
-            'Food & Drink': {
-                'Basic Food (Zero-rated)': { rate: 'ZERO', notice: 'VAT Notice 701/14', conditions: 'Most food for human consumption' },
-                'Restaurant/Catering': { rate: 'STANDARD', notice: 'VAT Notice 709/1', conditions: 'Food consumed on premises' },
-                'Hot Takeaway': { rate: 'STANDARD', notice: 'VAT Notice 709/1', conditions: 'Hot takeaway food' },
-                'Cold Takeaway': { rate: 'ZERO', notice: 'VAT Notice 709/1', conditions: 'Cold takeaway (not in designated area)' },
-                'Alcoholic Drinks': { rate: 'STANDARD', notice: 'VAT Notice 701/14', conditions: 'All alcohol' },
-                'Soft Drinks/Bottled Water': { rate: 'STANDARD', notice: 'VAT Notice 701/14', conditions: 'Non-alcoholic beverages' },
-                'Confectionery': { rate: 'STANDARD', notice: 'VAT Notice 701/14', conditions: 'Sweets and chocolate' }
-            },
-            'Clothing & Footwear': {
-                'Children\'s Clothing (Under 14)': { rate: 'ZERO', notice: 'VAT Notice 714', conditions: 'Young children\'s clothing' },
-                'Adult Clothing': { rate: 'STANDARD', notice: 'General', conditions: 'Adult clothing and footwear' },
-                'Motorcycle/Cycle Helmets': { rate: 'ZERO', notice: 'VAT Notice 701/23', conditions: 'Protective helmets' },
-                'Children\'s Car Seats': { rate: 'REDUCED', notice: 'VAT Notice 701/23', conditions: 'Car seats with restraints' }
-            },
-            'Books & Publications': {
-                'Books (Print & E-books)': { rate: 'ZERO', notice: 'VAT Notice 701/10', conditions: 'Books and publications' },
-                'Newspapers & Magazines': { rate: 'ZERO', notice: 'VAT Notice 701/10', conditions: 'Periodicals' },
-                'Brochures': { rate: 'ZERO', notice: 'VAT Notice 701/10', conditions: 'Printed brochures' }
-            },
-            'Energy & Utilities': {
-                'Domestic Electricity/Gas': { rate: 'REDUCED', notice: 'VAT Notice 701/19', conditions: 'Domestic use only' },
-                'Commercial Fuel': { rate: 'STANDARD', notice: 'VAT Notice 701/19', conditions: 'Business use' },
-                'Energy-Saving Materials (GB)': { rate: 'ZERO', notice: 'VAT Notice 708/6', conditions: 'Heat pumps, solar panels (Great Britain)' },
-                'Energy-Saving Materials (NI)': { rate: 'REDUCED', notice: 'VAT Notice 708/6', conditions: 'Northern Ireland installations' },
-                'Water & Sewerage (Domestic)': { rate: 'ZERO', notice: 'VAT Notice 701/16', conditions: 'Domestic water services' }
-            },
-            'Construction & Property': {
-                'New Residential Build': { rate: 'ZERO', notice: 'VAT Notice 708', conditions: 'New dwelling construction' },
-                'Residential Conversion': { rate: 'REDUCED', notice: 'VAT Notice 708', conditions: 'Non-residential to residential' },
-                'Renovation (Empty 2+ Years)': { rate: 'REDUCED', notice: 'VAT Notice 708', conditions: 'Residential renovation' },
-                'Disabled Adaptations': { rate: 'ZERO', notice: 'VAT Notice 708', conditions: 'Building services for disabled' },
-                'Standard Building Work': { rate: 'STANDARD', notice: 'VAT Notice 708', conditions: 'General construction' },
-                'Residential Property Rental': { rate: 'EXEMPT', notice: 'VAT Notice 742', conditions: 'Residential letting' },
-                'Commercial Property Rental': { rate: 'STANDARD', notice: 'VAT Notice 742', conditions: 'If opted to tax' }
-            },
-            'Transport': {
-                'Passenger Transport (UK)': { rate: 'ZERO', notice: 'VAT Notice 744A', conditions: 'UK passenger transport' },
-                'Freight (International)': { rate: 'ZERO', notice: 'VAT Notice 744B', conditions: 'To/from outside UK' },
-                'Freight (Domestic)': { rate: 'STANDARD', notice: 'VAT Notice 744B', conditions: 'Domestic freight' },
-                'Aircraft Maintenance': { rate: 'ZERO', notice: 'VAT Notice 744C', conditions: 'Aircraft repair' }
-            },
-            'Health & Medical': {
-                'Medical Services': { rate: 'EXEMPT', notice: 'VAT Notice 701/57', conditions: 'By registered professionals' },
-                'Prescription Medicines': { rate: 'ZERO', notice: 'VAT Notice 701/57', conditions: 'Prescription drugs' },
-                'Disability Aids': { rate: 'ZERO', notice: 'VAT Notice 701/7', conditions: 'Equipment for disabled' },
-                'Mobility Aids (Over 60)': { rate: 'REDUCED', notice: 'VAT Notice 701/7', conditions: 'For people over 60' },
-                'Sanitary Products': { rate: 'ZERO', notice: 'VAT Notice 701/18', conditions: 'Women\'s sanitary products' },
-                'Smoking Cessation Products': { rate: 'REDUCED', notice: 'General', conditions: 'Nicotine patches/gum' }
-            },
-            'Education & Training': {
-                'Education (Eligible Bodies)': { rate: 'EXEMPT', notice: 'General', conditions: 'Not private schools' },
-                'Private School Fees': { rate: 'STANDARD', notice: 'General', conditions: 'From 1 Jan 2025' },
-                'Vocational Training': { rate: 'EXEMPT', notice: 'General', conditions: 'By eligible bodies' }
-            },
-            'Financial Services': {
-                'Banking Services': { rate: 'EXEMPT', notice: 'VAT Notice 701/49', conditions: 'Financial services' },
-                'Insurance': { rate: 'EXEMPT', notice: 'VAT Notice 701/36', conditions: 'Insurance services' },
-                'Investment Gold': { rate: 'EXEMPT', notice: 'VAT Notice 701/21', conditions: 'Investment gold' }
-            },
-            'Digital Services': {
-                'Digital Services (UK B2C)': { rate: 'STANDARD', notice: 'VAT Notice 741A', conditions: 'To UK consumers' },
-                'Digital Services (EU B2C)': { rate: 'OUTSIDE_SCOPE', notice: 'VAT Notice 741A', conditions: 'EU VAT via OSS' },
-                'Software/SaaS (B2B Non-UK)': { rate: 'OUTSIDE_SCOPE', notice: 'VAT Notice 741A', conditions: 'Outside UK VAT' }
-            },
-            'Charity & Sport': {
-                'Charity Fundraising': { rate: 'EXEMPT', notice: 'VAT Notice 701/1', conditions: 'Charity events' },
-                'Sports Facilities': { rate: 'EXEMPT', notice: 'General', conditions: 'Sports activities' },
-                'Betting & Gaming': { rate: 'EXEMPT', notice: 'VAT Notice 701/29', conditions: 'Gambling services' }
-            },
-            'Exports': {
-                'Goods Export': { rate: 'ZERO', notice: 'VAT Notice 703', conditions: 'With export evidence' },
-                'Services to Overseas B2B': { rate: 'OUTSIDE_SCOPE', notice: 'VAT Notice 741A', conditions: 'Reverse charge applies' }
-            },
-            'General Goods & Services': {
-                'Electronics': { rate: 'STANDARD', notice: 'General', conditions: 'Consumer electronics' },
-                'Professional Services': { rate: 'STANDARD', notice: 'General', conditions: 'Legal, accounting, consulting' },
-                'General Goods': { rate: 'STANDARD', notice: 'General', conditions: 'Most goods and services' }
-            }
-        };
+    <div class="srt-info-box">
+        <strong>Tax Year 2025/26:</strong> This calculator determines your UK residence status based on the Statutory Residence Test (SRT) rules.
+    </div>
 
-        const ratePercentages = {
-            'STANDARD': 20,
-            'REDUCED': 5,
-            'ZERO': 0,
-            'EXEMPT': null,
-            'OUTSIDE_SCOPE': null
-        };
+    <div class="srt-content">
+        <div class="srt-progress">
+            <div class="srt-progress-bar" id="progressBar"></div>
+        </div>
 
-        // Initialize categories
-        function initCategories() {
-            const categorySelect = document.getElementById('category');
-            Object.keys(vatRules).forEach(category => {
-                const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category;
-                categorySelect.appendChild(option);
-            });
-        }
+        <!-- Step 1 -->
+        <div class="srt-step active" id="step1">
+            <div class="srt-question">
+                <h3>Tax Year Under Review</h3>
+                <div class="srt-input">
+                    <label>Which tax year are you checking?</label>
+                    <select id="taxYear">
+                        <option value="2025-26">2025/26 (6 April 2025 - 5 April 2026)</option>
+                        <option value="2024-25">2024/25 (6 April 2024 - 5 April 2025)</option>
+                        <option value="2023-24">2023/24 (6 April 2023 - 5 April 2024)</option>
+                    </select>
+                </div>
+                <div class="srt-help">💡 Select the tax year you want to determine your residence status for.</div>
+            </div>
+            <div class="srt-buttons">
+                <button class="srt-btn srt-btn-primary" onclick="goTo(2)">Next</button>
+            </div>
+        </div>
 
-        // Update subcategories
-        function updateSubcategories() {
-            const category = document.getElementById('category').value;
-            const subcategorySelect = document.getElementById('subcategory');
+        <!-- Step 2 -->
+        <div class="srt-step" id="step2">
+            <div class="srt-question">
+                <h3>Days Present in the UK</h3>
+                <div class="srt-input">
+                    <label>From Date (Start of period in UK):</label>
+                    <input type="date" id="dateFrom" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em; font-family: Georgia, serif; margin-bottom: 15px;">
+                </div>
+                <div class="srt-input">
+                    <label>To Date (End of period in UK):</label>
+                    <input type="date" id="dateTo" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em; font-family: Georgia, serif; margin-bottom: 15px;">
+                </div>
+                <div class="srt-input">
+                    <label>OR enter days manually:</label>
+                    <input type="number" id="daysInUK" min="0" max="366" placeholder="Enter number of days" readonly style="background: #f0f0f0;">
+                    <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                        <strong>Calculated days:</strong> <span id="calculatedDays" style="color: #3d6b1f; font-weight: bold;">0 days</span>
+                    </p>
+                </div>
+                <div class="srt-help">💡 Select your arrival and departure dates, and the calculator will automatically count the days. You are present in the UK on a day if you are in the UK at midnight.</div>
+            </div>
+            <div class="srt-buttons">
+                <button class="srt-btn srt-btn-secondary" onclick="goTo(1)">Previous</button>
+                <button class="srt-btn srt-btn-primary" onclick="goTo(3)">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="srt-step" id="step3">
+            <div class="srt-question">
+                <h3>Automatic UK Residence Tests</h3>
+                <p>Do any of the following apply to you?</p>
+                <div class="srt-option" onclick="toggle('auto1')">
+                    <input type="checkbox" id="auto1"> I was present in the UK for 183 days or more
+                </div>
+                <div class="srt-option" onclick="toggle('auto2')">
+                    <input type="checkbox" id="auto2"> I have a home in the UK (and either no overseas home OR was in overseas home &lt;30 days)
+                </div>
+                <div class="srt-option" onclick="toggle('auto3')">
+                    <input type="checkbox" id="auto3"> I work full-time in the UK (35+ hours/week)
+                </div>
+                <div class="srt-option" onclick="toggle('auto4')">
+                    <input type="checkbox" id="auto4"> None of the above apply
+                </div>
+                <div class="srt-help">💡 If any of the first three apply, you are automatically UK resident.</div>
+            </div>
+            <div class="srt-buttons">
+                <button class="srt-btn srt-btn-secondary" onclick="goTo(2)">Previous</button>
+                <button class="srt-btn srt-btn-primary" onclick="goTo(4)">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="srt-step" id="step4">
+            <div class="srt-question">
+                <h3>Automatic Overseas Tests</h3>
+                <p>Do any of the following apply to you?</p>
+                <div class="srt-option" onclick="toggle('nonres1')">
+                    <input type="checkbox" id="nonres1"> I was present in UK for &lt;16 days (or &lt;46 if not resident in previous 3 years)
+                </div>
+                <div class="srt-option" onclick="toggle('nonres2')">
+                    <input type="checkbox" id="nonres2"> I work full-time overseas and was in UK &lt;91 days (worked in UK &lt;31 days)
+                </div>
+                <div class="srt-option" onclick="toggle('nonres3')">
+                    <input type="checkbox" id="nonres3"> None of the above apply
+                </div>
+                <div class="srt-help">💡 If any of the first two apply, you are automatically non-UK resident.</div>
+            </div>
+            <div class="srt-buttons">
+                <button class="srt-btn srt-btn-secondary" onclick="goTo(3)">Previous</button>
+                <button class="srt-btn srt-btn-primary" onclick="goTo(5)">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="srt-step" id="step5">
+            <div class="srt-question">
+                <h3>UK Ties - Sufficient Ties Test</h3>
+                <div class="srt-input">
+                    <label>Were you UK resident in any of the previous 3 tax years?</label>
+                    <div class="srt-option" onclick="selectRadio('prevRes', 'yes')">
+                        <input type="radio" name="prevRes" id="prevResYes" value="yes"> Yes (Leavers - stricter thresholds)
+                    </div>
+                    <div class="srt-option" onclick="selectRadio('prevRes', 'no')">
+                        <input type="radio" name="prevRes" id="prevResNo" value="no"> No (Arrivers - more generous)
+                    </div>
+                </div>
+                <h4 style="margin-top: 25px; color: #2d5016;">UK Ties (Select all that apply):</h4>
+                <div class="srt-option" onclick="toggle('tie1')">
+                    <input type="checkbox" id="tie1"> <strong>Family:</strong> Spouse/partner or minor children are UK resident
+                </div>
+                <div class="srt-option" onclick="toggle('tie2')">
+                    <input type="checkbox" id="tie2"> <strong>Accommodation:</strong> Have UK accommodation available 91+ days
+                </div>
+                <div class="srt-option" onclick="toggle('tie3')">
+                    <input type="checkbox" id="tie3"> <strong>Work:</strong> Worked in UK for 40+ days (3+ hours/day)
+                </div>
+                <div class="srt-option" onclick="toggle('tie4')">
+                    <input type="checkbox" id="tie4"> <strong>90-Day:</strong> Spent 90+ days in UK in either of previous 2 years
+                </div>
+                <div class="srt-option" onclick="toggle('tie5')">
+                    <input type="checkbox" id="tie5"> <strong>Country (Leavers only):</strong> Spent more days in UK than any other country
+                </div>
+                <div class="srt-help">💡 More ties = fewer days needed to be resident.</div>
+            </div>
+            <div class="srt-buttons">
+                <button class="srt-btn srt-btn-secondary" onclick="goTo(4)">Previous</button>
+                <button class="srt-btn srt-btn-primary" onclick="goTo(6)">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="srt-step" id="step6">
+            <div class="srt-question">
+                <h3>Split Year Treatment</h3>
+                <h4 style="color: #2d5016;">Arriving in UK:</h4>
+                <div class="srt-option" onclick="toggle('split1')">
+                    <input type="checkbox" id="split1"> <strong>Case 4:</strong> Started to have only home in UK
+                </div>
+                <div class="srt-option" onclick="toggle('split2')">
+                    <input type="checkbox" id="split2"> <strong>Case 5:</strong> Started full-time work in UK
+                </div>
+                <div class="srt-option" onclick="toggle('split3')">
+                    <input type="checkbox" id="split3"> <strong>Case 6:</strong> Partner stopped overseas work
+                </div>
+                <div class="srt-option" onclick="toggle('split4')">
+                    <input type="checkbox" id="split4"> <strong>Case 7:</strong> Ceased overseas employment
+                </div>
+                <div class="srt-option" onclick="toggle('split8')">
+                    <input type="checkbox" id="split8"> <strong>Case 8:</strong> Started to have home in UK
+                </div>
+                <h4 style="color: #2d5016; margin-top: 25px;">Leaving UK:</h4>
+                <div class="srt-option" onclick="toggle('split5')">
+                    <input type="checkbox" id="split5"> <strong>Case 1:</strong> Started full-time work overseas
+                </div>
+                <div class="srt-option" onclick="toggle('split6')">
+                    <input type="checkbox" id="split6"> <strong>Case 2:</strong> Partner started full-time work overseas
+                </div>
+                <div class="srt-option" onclick="toggle('split7')">
+                    <input type="checkbox" id="split7"> <strong>Case 3:</strong> Ceased to have UK home
+                </div>
+                <div class="srt-option" onclick="toggle('split9')">
+                    <input type="checkbox" id="split9"> None of these apply
+                </div>
+                <div class="srt-help">💡 Cases 1-3 = leaving UK; Cases 4-8 = arriving in UK</div>
+            </div>
+            <div class="srt-buttons">
+                <button class="srt-btn srt-btn-secondary" onclick="goTo(5)">Previous</button>
+                <button class="srt-btn srt-btn-primary" onclick="calculate()">Calculate Result</button>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="srt-results" id="results">
+            <div class="srt-result-box">
+                <h2>Your UK Residence Status</h2>
+                <div id="output"></div>
+            </div>
+            <div class="srt-warning">
+                <h4>⚠️ Important Notice</h4>
+                <p>This calculator provides guidance only. For definitive advice, consult a qualified tax adviser or refer to HMRC guidance RDR3.</p>
+            </div>
+            <div class="srt-tips">
+                <h4>💡 Next Steps</h4>
+                <ul>
+                    <li>Keep detailed records of UK arrival/departure dates</li>
+                    <li>Maintain evidence of ties</li>
+                    <li>Consider split year treatment if applicable</li>
+                    <li>Consult a tax adviser for complex situations</li>
+                </ul>
+            </div>
+            <div class="srt-buttons">
+                <button class="srt-btn srt-btn-secondary" onclick="reset()">Start New Calculation</button>
+                <button class="srt-btn srt-btn-primary" onclick="window.print()">Print Results</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let current = 1;
+
+// Calculate days between dates
+function calculateDays() {
+    const dateFrom = document.getElementById('dateFrom').value;
+    const dateTo = document.getElementById('dateTo').value;
+    
+    if (dateFrom && dateTo) {
+        const from = new Date(dateFrom);
+        const to = new Date(dateTo);
+        
+        if (to >= from) {
+            // Calculate days inclusive (both start and end dates count)
+            const diffTime = Math.abs(to - from);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
             
-            subcategorySelect.innerHTML = '<option value="">-- Select Product/Service --</option>';
-            
-            if (category && vatRules[category]) {
-                Object.keys(vatRules[category]).forEach(subcategory => {
-                    const option = document.createElement('option');
-                    option.value = subcategory;
-                    option.textContent = subcategory;
-                    subcategorySelect.appendChild(option);
-                });
-            }
+            document.getElementById('daysInUK').value = diffDays;
+            document.getElementById('calculatedDays').textContent = diffDays + ' days';
+            document.getElementById('calculatedDays').style.color = '#3d6b1f';
+        } else {
+            document.getElementById('calculatedDays').textContent = 'End date must be after start date';
+            document.getElementById('calculatedDays').style.color = '#dc3545';
+            document.getElementById('daysInUK').value = '';
         }
+    }
+}
 
-        // Calculate VAT
-        function calculateVAT() {
-            const category = document.getElementById('category').value;
-            const subcategory = document.getElementById('subcategory').value;
-            const supplierLocation = document.getElementById('supplierLocation').value;
-            const customerLocation = document.getElementById('customerLocation').value;
-            const customerType = document.getElementById('customerType').value;
-            const amount = parseFloat(document.getElementById('amount').value) || 0;
+// Add event listeners for date changes
+document.addEventListener('DOMContentLoaded', function() {
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    
+    if (dateFrom) {
+        dateFrom.addEventListener('change', calculateDays);
+    }
+    if (dateTo) {
+        dateTo.addEventListener('change', calculateDays);
+    }
+    
+    // Allow manual entry by clicking on the days field
+    const daysInput = document.getElementById('daysInUK');
+    if (daysInput) {
+        daysInput.addEventListener('click', function() {
+            this.readOnly = false;
+            this.style.background = 'white';
+            this.select();
+        });
+        
+        daysInput.addEventListener('blur', function() {
+            if (this.value) {
+                document.getElementById('calculatedDays').textContent = this.value + ' days (manually entered)';
+            }
+        });
+    }
+});
 
-            if (!category || !subcategory) {
-                alert('Please select both category and specific product/service');
+function goTo(step) {
+    // Validation
+    if (current === 2 && step > 2) {
+        const days = document.getElementById('daysInUK').value;
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+        
+        if (!days || days < 0 || days > 366) {
+            if (!dateFrom || !dateTo) {
+                alert('Please select dates or enter the number of days (0-366)');
                 return;
             }
+        }
+    }
+    if (current === 5 && step > 5) {
+        if (!document.querySelector('input[name="prevRes"]:checked')) {
+            alert('Please select if you were UK resident in previous 3 years');
+            return;
+        }
+    }
+    
+    // Hide current, show new
+    document.getElementById('step' + current).classList.remove('active');
+    document.getElementById('step' + step).classList.add('active');
+    current = step;
+    
+    // Update progress
+    document.getElementById('progressBar').style.width = (step / 6 * 100) + '%';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
 
-            const rule = vatRules[category][subcategory];
-            let rateType = rule.rate;
-            let ratePercentage = ratePercentages[rateType];
-            let notes = [];
-
-            // Place of supply logic
-            let placeOfSupply = supplierLocation;
-            let placeExplanation = '';
-
-            if (customerType === 'B2B') {
-                placeOfSupply = customerLocation;
-                placeExplanation = 'B2B supply - taxable where customer belongs (VAT Notice 741A Section 6.3)';
-                
-                if (supplierLocation === 'UK' && customerLocation !== 'UK') {
-                    rateType = 'OUTSIDE_SCOPE';
-                    ratePercentage = null;
-                    notes.push('UK VAT not charged - reverse charge applies in customer\'s country');
+function toggle(id) {
+    const cb = document.getElementById(id);
+    cb.checked = !cb.checked;
+    cb.closest('.srt-option').classList.toggle('selected', cb.checked);
+    
+    // Handle "none" logic
+    if ((id === 'auto4' || id === 'nonres3' || id === 'split9') && cb.checked) {
+        const group = id.replace(/\d/, '');
+        for (let i = 1; i <= 10; i++) {
+            const otherId = group + i;
+            if (otherId !== id) {
+                const other = document.getElementById(otherId);
+                if (other) {
+                    other.checked = false;
+                    other.closest('.srt-option').classList.remove('selected');
                 }
-            } else {
-                placeExplanation = 'B2C supply - taxable where supplier belongs (VAT Notice 741A Section 6.2)';
-                
-                if (category === 'Digital Services' && customerLocation !== 'UK') {
-                    placeOfSupply = customerLocation;
-                    placeExplanation = 'Digital service to consumer - taxable where customer is located';
-                    rateType = 'OUTSIDE_SCOPE';
-                    ratePercentage = null;
-                    if (customerLocation === 'EU') {
-                        notes.push('Consider OSS registration for EU customers');
-                    }
-                }
             }
-
-            // Calculate amounts
-            let netAmount = amount;
-            let vatAmount = 0;
-            let grossAmount = amount;
-
-            if (amount > 0 && ratePercentage !== null) {
-                vatAmount = amount * (ratePercentage / 100);
-                grossAmount = amount + vatAmount;
-            }
-
-            // Display results
-            displayResults({
-                category,
-                subcategory,
-                rateType,
-                ratePercentage,
-                notice: rule.notice,
-                conditions: rule.conditions,
-                placeOfSupply,
-                placeExplanation,
-                supplierLocation,
-                customerLocation,
-                customerType,
-                netAmount,
-                vatAmount,
-                grossAmount,
-                notes
-            });
         }
-
-        function displayResults(result) {
-            const resultBox = document.getElementById('resultBox');
-            const resultContent = document.getElementById('resultContent');
-
-            let rateClass = 'rate-standard';
-            if (result.rateType === 'REDUCED') rateClass = 'rate-reduced';
-            else if (result.rateType === 'ZERO') rateClass = 'rate-zero';
-            else if (result.rateType === 'EXEMPT') rateClass = 'rate-exempt';
-            else if (result.rateType === 'OUTSIDE_SCOPE') rateClass = 'rate-outside';
-
-            let rateDisplay = result.rateType;
-            if (result.ratePercentage !== null) {
-                rateDisplay = `${result.rateType} (${result.ratePercentage}%)`;
-            }
-
-            let html = `
-                <div class="result-item">
-                    <span class="result-label">VAT Rate:</span>
-                    <span class="vat-rate-badge ${rateClass}">${rateDisplay}</span>
-                </div>
-                
-                <div class="result-item">
-                    <span class="result-label">Category:</span>
-                    <span class="result-value">${result.category} → ${result.subcategory}</span>
-                </div>
-                
-                <div class="result-item">
-                    <span class="result-label">Place of Supply:</span>
-                    <span class="result-value">${result.placeOfSupply}</span>
-                </div>
-                
-                <div class="notice-box">
-                    <strong>📋 HMRC Reference:</strong> ${result.notice}<br>
-                    <strong>Conditions:</strong> ${result.conditions}<br>
-                    <strong>Explanation:</strong> ${result.placeExplanation}
-                </div>
-            `;
-
-            if (result.netAmount > 0) {
-                html += `
-                    <div class="amount-calculation">
-                        <h4 style="margin-bottom: 15px; color: #333;">💷 Amount Calculation</h4>
-                        <div class="amount-row">
-                            <span>Net Amount:</span>
-                            <span>£${result.netAmount.toFixed(2)}</span>
-                        </div>
-                        <div class="amount-row">
-                            <span>VAT Amount (${result.ratePercentage || 0}%):</span>
-                            <span>£${result.vatAmount.toFixed(2)}</span>
-                        </div>
-                        <div class="amount-row">
-                            <span>Gross Amount:</span>
-                            <span>£${result.grossAmount.toFixed(2)}</span>
-                        </div>
-                    </div>
-                `;
-            }
-
-            if (result.notes.length > 0) {
-                html += '<div class="notice-box" style="background: #d4edda; border-left-color: #28a745;">';
-                html += '<strong>ℹ️ Important Notes:</strong><ul style="margin-left: 20px; margin-top: 10px;">';
-                result.notes.forEach(note => {
-                    html += `<li>${note}</li>`;
-                });
-                html += '</ul></div>';
-            }
-
-            resultContent.innerHTML = html;
-            resultBox.classList.add('show');
-            resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else if ((id.startsWith('auto') || id.startsWith('nonres') || id.startsWith('split')) && cb.checked) {
+        const noneId = id.replace(/\d/, '') + (id.startsWith('split') ? '9' : (id.startsWith('nonres') ? '3' : '4'));
+        const none = document.getElementById(noneId);
+        if (none) {
+            none.checked = false;
+            none.closest('.srt-option').classList.remove('selected');
         }
+    }
+}
 
-        function resetForm() {
-            document.getElementById('category').value = '';
-            document.getElementById('subcategory').innerHTML = '<option value="">-- First select a category --</option>';
-            document.getElementById('supplierLocation').value = 'UK';
-            document.getElementById('customerLocation').value = 'UK';
-            document.getElementById('customerType').value = 'B2C';
-            document.getElementById('amount').value = '';
-            document.getElementById('resultBox').classList.remove('show');
+function selectRadio(name, val) {
+    document.querySelectorAll('[name="' + name + '"]').forEach(r => {
+        r.closest('.srt-option').classList.remove('selected');
+    });
+    const radio = document.getElementById(name + val.charAt(0).toUpperCase() + val.slice(1));
+    radio.checked = true;
+    radio.closest('.srt-option').classList.add('selected');
+}
+
+function calculate() {
+    const days = parseInt(document.getElementById('daysInUK').value);
+    const year = document.getElementById('taxYear').value;
+    const auto1 = document.getElementById('auto1').checked;
+    const auto2 = document.getElementById('auto2').checked;
+    const auto3 = document.getElementById('auto3').checked;
+    const nonres1 = document.getElementById('nonres1').checked;
+    const nonres2 = document.getElementById('nonres2').checked;
+    const prevRes = document.querySelector('input[name="prevRes"]:checked')?.value === 'yes';
+    
+    const ties = [
+        document.getElementById('tie1').checked,
+        document.getElementById('tie2').checked,
+        document.getElementById('tie3').checked,
+        document.getElementById('tie4').checked,
+        document.getElementById('tie5').checked && prevRes
+    ].filter(Boolean).length;
+    
+    const split = ['split1','split2','split3','split4','split5','split6','split7','split8']
+        .some(id => document.getElementById(id).checked);
+    
+    let status = '', badge = '', exp = '';
+    
+    if (auto1 || auto2 || auto3) {
+        status = 'UK Resident';
+        badge = 'srt-badge-resident';
+        exp = '<h4>Automatic UK Residence Test Met</h4><ul>';
+        if (auto1) exp += '<li>✓ 183+ days (' + days + ' days)</li>';
+        if (auto2) exp += '<li>✓ UK home test met</li>';
+        if (auto3) exp += '<li>✓ Full-time UK work</li>';
+        exp += '</ul><p><strong>Result:</strong> Automatically UK resident for ' + year + '</p>';
+    } else if (nonres1 || nonres2) {
+        status = 'Non-UK Resident';
+        badge = 'srt-badge-nonresident';
+        exp = '<h4>Automatic Non-Residence Test Met</h4><p><strong>Result:</strong> Automatically non-UK resident for ' + year + '</p>';
+    } else {
+        let req = 0;
+        if (prevRes) {
+            if (days >= 16 && days <= 45) req = 4;
+            else if (days >= 46 && days <= 90) req = 3;
+            else if (days >= 91 && days <= 120) req = 2;
+            else if (days >= 121 && days <= 182) req = 1;
+        } else {
+            if (days >= 46 && days <= 90) req = 4;
+            else if (days >= 91 && days <= 120) req = 3;
+            else if (days >= 121 && days <= 182) req = 2;
         }
+        
+        if (days < 16 || (days < 46 && !prevRes)) {
+            status = 'Non-UK Resident';
+            badge = 'srt-badge-nonresident';
+            exp = '<p>Days too low (' + days + ' days)</p>';
+        } else if (days >= 183) {
+            status = 'UK Resident';
+            badge = 'srt-badge-resident';
+            exp = '<p>183+ days test met</p>';
+        } else if (ties >= req && req > 0) {
+            status = 'UK Resident';
+            badge = 'srt-badge-resident';
+            exp = '<p>' + days + ' days + ' + ties + ' ties = Resident</p>';
+        } else {
+            status = 'Non-UK Resident';
+            badge = 'srt-badge-nonresident';
+            exp = '<p>' + days + ' days + ' + ties + ' ties = Non-Resident</p>';
+        }
+    }
+    
+    if (split) {
+        badge = 'srt-badge-split';
+        status += ' (Split Year Possible)';
+        exp += '<div style="background:#fff3cd;padding:15px;margin-top:15px;border-radius:8px"><h4 style="color:#856404">🔄 Split Year May Apply</h4><p>Consult HMRC RDR3 or tax adviser</p></div>';
+    }
+    
+    document.getElementById('output').innerHTML = 
+        '<div class="srt-badge ' + badge + '">' + status + '</div>' +
+        '<div class="srt-explanation">' + exp + '</div>' +
+        '<table style="width:100%;border-collapse:collapse;margin-top:20px">' +
+        '<tr style="background:#f8f9fa"><td style="padding:10px;border:1px solid #ddd"><strong>Tax Year:</strong></td><td style="padding:10px;border:1px solid #ddd">' + year + '</td></tr>' +
+        '<tr><td style="padding:10px;border:1px solid #ddd"><strong>Days:</strong></td><td style="padding:10px;border:1px solid #ddd">' + days + '</td></tr>' +
+        '<tr style="background:#f8f9fa"><td style="padding:10px;border:1px solid #ddd"><strong>Ties:</strong></td><td style="padding:10px;border:1px solid #ddd">' + ties + '</td></tr>' +
+        '<tr><td style="padding:10px;border:1px solid #ddd"><strong>Type:</strong></td><td style="padding:10px;border:1px solid #ddd">' + (prevRes ? 'Leaver' : 'Arriver') + '</td></tr>' +
+        '</table>';
+    
+    document.getElementById('step6').classList.remove('active');
+    document.getElementById('results').classList.add('show');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
 
-        // Initialize on page load
-        window.onload = function() {
-            initCategories();
-        };
-    </script>
+function reset() {
+    document.getElementById('daysInUK').value = '';
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+        cb.closest('.srt-option').classList.remove('selected');
+    });
+    document.querySelectorAll('input[type="radio"]').forEach(r => {
+        r.checked = false;
+        r.closest('.srt-option').classList.remove('selected');
+    });
+    document.getElementById('results').classList.remove('show');
+    document.getElementById('step1').classList.add('active');
+    current = 1;
+    document.getElementById('progressBar').style.width = '16.67%';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+</script>
+
 </body>
 </html>
