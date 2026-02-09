@@ -245,6 +245,51 @@
 
         .srt-tips h4 { color: #0c5460; margin: 0 0 10px 0; }
 
+        @media print {
+            .srt-calc-header { break-inside: avoid; }
+            .srt-step { display: none !important; }
+            .srt-progress { display: none; }
+            .srt-buttons { display: none; }
+            .srt-results { display: block !important; page-break-inside: avoid; }
+            .srt-print-summary { display: block !important; }
+            body { font-size: 12pt; }
+            .srt-calc-wrapper { box-shadow: none; margin: 0; }
+        }
+
+        .srt-print-summary {
+            display: none;
+            background: white;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 2px solid #3d6b1f;
+        }
+
+        .srt-print-summary h3 {
+            color: #2d5016;
+            margin: 20px 0 10px 0;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .srt-print-summary h3:first-child {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        .srt-print-summary .answer {
+            background: #f0f9ff;
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border-left: 3px solid #3d6b1f;
+        }
+
+        .srt-print-summary .answer strong {
+            color: #2d5016;
+        }
+
         @media (max-width: 768px) {
             .srt-calc-header h1 { font-size: 1.5em; }
             .srt-content { padding: 20px; }
@@ -445,6 +490,32 @@
 
         <!-- Results -->
         <div class="srt-results" id="results">
+            
+            <!-- Print Summary -->
+            <div class="srt-print-summary" id="printSummary">
+                <h2 style="color: #2d5016; margin: 0 0 20px 0;">📋 Your Completed Answers</h2>
+                
+                <h3>1. Tax Year</h3>
+                <div class="answer" id="printTaxYear"></div>
+                
+                <h3>2. Days Present in UK</h3>
+                <div class="answer" id="printDays"></div>
+                <div class="answer" id="printDates"></div>
+                
+                <h3>3. Automatic UK Residence Tests</h3>
+                <div class="answer" id="printAutoUK"></div>
+                
+                <h3>4. Automatic Overseas Tests</h3>
+                <div class="answer" id="printAutoOverseas"></div>
+                
+                <h3>5. Previous UK Residence & Ties</h3>
+                <div class="answer" id="printPrevRes"></div>
+                <div class="answer" id="printTies"></div>
+                
+                <h3>6. Split Year Treatment</h3>
+                <div class="answer" id="printSplit"></div>
+            </div>
+            
             <div class="srt-result-box">
                 <h2>Your UK Residence Status</h2>
                 <div id="output"></div>
@@ -595,9 +666,80 @@ function selectRadio(name, val) {
     radio.closest('.srt-option').classList.add('selected');
 }
 
+function generatePrintSummary(year, days, dateFrom, dateTo, auto1, auto2, auto3, nonres1, nonres2, prevRes) {
+    // Tax Year
+    document.getElementById('printTaxYear').innerHTML = '<strong>Tax Year:</strong> ' + year;
+    
+    // Days and Dates
+    let daysHtml = '<strong>Days in UK:</strong> ' + days + ' days';
+    document.getElementById('printDays').innerHTML = daysHtml;
+    
+    if (dateFrom && dateTo) {
+        document.getElementById('printDates').innerHTML = '<strong>Period:</strong> From ' + dateFrom + ' to ' + dateTo;
+    } else {
+        document.getElementById('printDates').innerHTML = '<strong>Period:</strong> Not specified';
+    }
+    
+    // Automatic UK Tests
+    let autoUKhtml = '';
+    if (auto1) autoUKhtml += '✓ Present in UK for 183+ days<br>';
+    if (auto2) autoUKhtml += '✓ Have a home in UK (and no/limited overseas home)<br>';
+    if (auto3) autoUKhtml += '✓ Work full-time in UK<br>';
+    if (!auto1 && !auto2 && !auto3) autoUKhtml = 'None of the automatic UK residence tests apply';
+    document.getElementById('printAutoUK').innerHTML = autoUKhtml;
+    
+    // Automatic Overseas Tests
+    let autoOverseasHtml = '';
+    if (nonres1) autoOverseasHtml += '✓ Present in UK for less than 16 days (or 46 days)<br>';
+    if (nonres2) autoOverseasHtml += '✓ Work full-time overseas and in UK less than 91 days<br>';
+    if (!nonres1 && !nonres2) autoOverseasHtml = 'None of the automatic overseas residence tests apply';
+    document.getElementById('printAutoOverseas').innerHTML = autoOverseasHtml;
+    
+    // Previous Residence
+    let prevResHtml = '<strong>UK resident in previous 3 years:</strong> ' + (prevRes ? 'Yes (Leavers)' : 'No (Arrivers)');
+    document.getElementById('printPrevRes').innerHTML = prevResHtml;
+    
+    // Ties
+    let tiesHtml = '<strong>UK Ties:</strong><br>';
+    if (document.getElementById('tie1').checked) tiesHtml += '✓ Family tie (spouse/partner or minor children in UK)<br>';
+    if (document.getElementById('tie2').checked) tiesHtml += '✓ Accommodation tie (UK accommodation available 91+ days)<br>';
+    if (document.getElementById('tie3').checked) tiesHtml += '✓ Work tie (worked in UK 40+ days)<br>';
+    if (document.getElementById('tie4').checked) tiesHtml += '✓ 90-day tie (90+ days in UK in previous 2 years)<br>';
+    if (document.getElementById('tie5').checked && prevRes) tiesHtml += '✓ Country tie (more days in UK than any other country)<br>';
+    
+    const tieCount = [
+        document.getElementById('tie1').checked,
+        document.getElementById('tie2').checked,
+        document.getElementById('tie3').checked,
+        document.getElementById('tie4').checked,
+        document.getElementById('tie5').checked && prevRes
+    ].filter(Boolean).length;
+    
+    if (tieCount === 0) tiesHtml += 'No UK ties';
+    else tiesHtml += '<strong>Total ties: ' + tieCount + '</strong>';
+    
+    document.getElementById('printTies').innerHTML = tiesHtml;
+    
+    // Split Year
+    let splitHtml = '';
+    if (document.getElementById('split1').checked) splitHtml += '✓ Case 4: Started to have only home in UK<br>';
+    if (document.getElementById('split2').checked) splitHtml += '✓ Case 5: Started full-time work in UK<br>';
+    if (document.getElementById('split3').checked) splitHtml += '✓ Case 6: Partner stopped overseas work<br>';
+    if (document.getElementById('split4').checked) splitHtml += '✓ Case 7: Ceased overseas employment<br>';
+    if (document.getElementById('split5').checked) splitHtml += '✓ Case 1: Started full-time work overseas<br>';
+    if (document.getElementById('split6').checked) splitHtml += '✓ Case 2: Partner started full-time work overseas<br>';
+    if (document.getElementById('split7').checked) splitHtml += '✓ Case 3: Ceased to have UK home<br>';
+    if (document.getElementById('split8').checked) splitHtml += '✓ Case 8: Started to have home in UK<br>';
+    
+    if (splitHtml === '') splitHtml = 'No split year treatment cases apply';
+    document.getElementById('printSplit').innerHTML = splitHtml;
+}
+
 function calculate() {
     const days = parseInt(document.getElementById('daysInUK').value);
     const year = document.getElementById('taxYear').value;
+    const dateFrom = document.getElementById('dateFrom').value;
+    const dateTo = document.getElementById('dateTo').value;
     const auto1 = document.getElementById('auto1').checked;
     const auto2 = document.getElementById('auto2').checked;
     const auto3 = document.getElementById('auto3').checked;
@@ -615,6 +757,9 @@ function calculate() {
     
     const split = ['split1','split2','split3','split4','split5','split6','split7','split8']
         .some(id => document.getElementById(id).checked);
+    
+    // Generate Print Summary
+    generatePrintSummary(year, days, dateFrom, dateTo, auto1, auto2, auto3, nonres1, nonres2, prevRes);
     
     let status = '', badge = '', exp = '';
     
