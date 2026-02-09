@@ -403,36 +403,39 @@
         <div class="srt-step" id="step6">
             <div class="srt-question">
                 <h3>Split Year Treatment</h3>
-                <h4 style="color: #2d5016;">Arriving in UK:</h4>
+                <p style="margin-bottom: 15px;">Split year treatment may apply if you moved to/from the UK during the tax year. Do any of these apply?</p>
+                
+                <h4 style="color: #2d5016;">Arriving in the UK Cases:</h4>
                 <div class="srt-option" onclick="toggle('split1')">
-                    <input type="checkbox" id="split1"> <strong>Case 4:</strong> Started to have only home in UK
+                    <input type="checkbox" id="split1"> <strong>Case 4:</strong> I started to have my only home in the UK (and was non-resident the previous year)
                 </div>
                 <div class="srt-option" onclick="toggle('split2')">
-                    <input type="checkbox" id="split2"> <strong>Case 5:</strong> Started full-time work in UK
+                    <input type="checkbox" id="split2"> <strong>Case 5:</strong> I started full-time work in the UK (and will be resident in following year)
                 </div>
                 <div class="srt-option" onclick="toggle('split3')">
-                    <input type="checkbox" id="split3"> <strong>Case 6:</strong> Partner stopped overseas work
+                    <input type="checkbox" id="split3"> <strong>Case 6:</strong> My partner stopped full-time work overseas and I came to the UK with them
                 </div>
                 <div class="srt-option" onclick="toggle('split4')">
-                    <input type="checkbox" id="split4"> <strong>Case 7:</strong> Ceased overseas employment
+                    <input type="checkbox" id="split4"> <strong>Case 7:</strong> I stopped full-time work overseas and came to the UK
                 </div>
                 <div class="srt-option" onclick="toggle('split8')">
-                    <input type="checkbox" id="split8"> <strong>Case 8:</strong> Started to have home in UK
+                    <input type="checkbox" id="split8"> <strong>Case 8:</strong> I started to have a home in the UK only (and will be resident in following year)
                 </div>
-                <h4 style="color: #2d5016; margin-top: 25px;">Leaving UK:</h4>
+                
+                <h4 style="color: #2d5016; margin-top: 25px;">Leaving the UK Cases:</h4>
                 <div class="srt-option" onclick="toggle('split5')">
-                    <input type="checkbox" id="split5"> <strong>Case 1:</strong> Started full-time work overseas
+                    <input type="checkbox" id="split5"> <strong>Case 1:</strong> I started full-time work overseas (and was UK resident in previous year, and non-resident in following year due to full-time work overseas)
                 </div>
                 <div class="srt-option" onclick="toggle('split6')">
-                    <input type="checkbox" id="split6"> <strong>Case 2:</strong> Partner started full-time work overseas
+                    <input type="checkbox" id="split6"> <strong>Case 2:</strong> My partner started full-time work overseas and I left the UK to accompany them
                 </div>
                 <div class="srt-option" onclick="toggle('split7')">
-                    <input type="checkbox" id="split7"> <strong>Case 3:</strong> Ceased to have UK home
+                    <input type="checkbox" id="split7"> <strong>Case 3:</strong> I ceased to have a home in the UK (moved abroad to live permanently)
                 </div>
                 <div class="srt-option" onclick="toggle('split9')">
                     <input type="checkbox" id="split9"> None of these apply
                 </div>
-                <div class="srt-help">💡 Cases 1-3 = leaving UK; Cases 4-8 = arriving in UK</div>
+                <div class="srt-help">💡 Split year treatment divides the tax year into UK and overseas parts, potentially reducing UK tax liability. HMRC defines 8 cases: Cases 1-3 are for leaving the UK, Cases 4-8 are for arriving in the UK. Strict conditions must be met for each case - consult HMRC guidance RDR3 or a tax adviser to confirm eligibility.</div>
             </div>
             <div class="srt-buttons">
                 <button class="srt-btn srt-btn-secondary" onclick="goTo(5)">Previous</button>
@@ -662,7 +665,24 @@ function calculate() {
     if (split) {
         badge = 'srt-badge-split';
         status += ' (Split Year Possible)';
-        exp += '<div style="background:#fff3cd;padding:15px;margin-top:15px;border-radius:8px"><h4 style="color:#856404">🔄 Split Year May Apply</h4><p>Consult HMRC RDR3 or tax adviser</p></div>';
+        
+        let splitCases = [];
+        if (document.getElementById('split1').checked) splitCases.push('Case 4: Started to have only home in UK');
+        if (document.getElementById('split2').checked) splitCases.push('Case 5: Started full-time work in UK');
+        if (document.getElementById('split3').checked) splitCases.push('Case 6: Partner stopped overseas work');
+        if (document.getElementById('split4').checked) splitCases.push('Case 7: Ceased overseas employment');
+        if (document.getElementById('split5').checked) splitCases.push('Case 1: Started full-time work overseas');
+        if (document.getElementById('split6').checked) splitCases.push('Case 2: Partner started full-time work overseas');
+        if (document.getElementById('split7').checked) splitCases.push('Case 3: Ceased to have UK home');
+        if (document.getElementById('split8').checked) splitCases.push('Case 8: Started to have home in UK');
+        
+        exp += '<div style="background:#fff3cd;padding:15px;margin-top:15px;border-radius:8px">';
+        exp += '<h4 style="color:#856404">🔄 Split Year Treatment May Apply</h4>';
+        exp += '<p>Based on your answers, the following split year case(s) may apply:</p><ul style="margin-left:20px">';
+        splitCases.forEach(c => exp += '<li>' + c + '</li>');
+        exp += '</ul>';
+        exp += '<p><strong>Important:</strong> Split year treatment divides the tax year into a UK part and an overseas part. You should only be taxed as a UK resident for the UK part of the year. Strict conditions must be met - consult HMRC guidance RDR3 or a tax adviser to confirm eligibility.</p>';
+        exp += '</div>';
     }
     
     document.getElementById('output').innerHTML = 
